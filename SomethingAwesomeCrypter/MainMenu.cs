@@ -17,7 +17,7 @@ namespace SomethingAwesomeCrypter
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Button1_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
@@ -29,7 +29,7 @@ namespace SomethingAwesomeCrypter
             }
         }
 
-        private void btnEncrypt_Click(object sender, EventArgs e)
+        private void BtnEncrypt_Click(object sender, EventArgs e)
         {
             string filePath = textBox1.Text;
             // The whole program in bytes

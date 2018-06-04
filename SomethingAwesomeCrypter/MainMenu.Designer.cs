@@ -30,9 +30,9 @@
         {
             this.label1 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.Button1 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.btnEncrypt = new System.Windows.Forms.Button();
+            this.BtnEncrypt = new System.Windows.Forms.Button();
             this.btnDecrypt = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.label3 = new System.Windows.Forms.Label();
@@ -56,15 +56,15 @@
             this.textBox1.Size = new System.Drawing.Size(670, 20);
             this.textBox1.TabIndex = 1;
             // 
-            // button1
+            // Button1
             // 
-            this.button1.Location = new System.Drawing.Point(702, 29);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(127, 23);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "Select File";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.Button1.Location = new System.Drawing.Point(702, 29);
+            this.Button1.Name = "Button1";
+            this.Button1.Size = new System.Drawing.Size(127, 23);
+            this.Button1.TabIndex = 2;
+            this.Button1.Text = "Select File";
+            this.Button1.UseVisualStyleBackColor = true;
+            this.Button1.Click += new System.EventHandler(this.Button1_Click);
             // 
             // label2
             // 
@@ -76,15 +76,15 @@
             this.label2.TabIndex = 3;
             this.label2.Text = "Select Action:";
             // 
-            // btnEncrypt
+            // BtnEncrypt
             // 
-            this.btnEncrypt.Location = new System.Drawing.Point(26, 144);
-            this.btnEncrypt.Name = "btnEncrypt";
-            this.btnEncrypt.Size = new System.Drawing.Size(75, 23);
-            this.btnEncrypt.TabIndex = 4;
-            this.btnEncrypt.Text = "Encrypt";
-            this.btnEncrypt.UseVisualStyleBackColor = true;
-            this.btnEncrypt.Click += new System.EventHandler(this.btnEncrypt_Click);
+            this.BtnEncrypt.Location = new System.Drawing.Point(26, 144);
+            this.BtnEncrypt.Name = "BtnEncrypt";
+            this.BtnEncrypt.Size = new System.Drawing.Size(75, 23);
+            this.BtnEncrypt.TabIndex = 4;
+            this.BtnEncrypt.Text = "Encrypt";
+            this.BtnEncrypt.UseVisualStyleBackColor = true;
+            this.BtnEncrypt.Click += new System.EventHandler(this.BtnEncrypt_Click);
             // 
             // btnDecrypt
             // 
@@ -124,9 +124,9 @@
             this.Controls.Add(this.outputTextBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.btnDecrypt);
-            this.Controls.Add(this.btnEncrypt);
+            this.Controls.Add(this.BtnEncrypt);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.Button1);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -141,9 +141,9 @@
 
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button Button1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button btnEncrypt;
+        private System.Windows.Forms.Button BtnEncrypt;
         private System.Windows.Forms.Button btnDecrypt;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Label label3;
