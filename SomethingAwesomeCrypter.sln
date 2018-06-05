@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SomethingAwesomeCrypter", "SomethingAwesomeCrypter\SomethingAwesomeCrypter.csproj", "{9F6E5260-CFA7-40F9-BA55-0787B512B457}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SomeAwesomeStub", "SomeAwesomeStub\SomeAwesomeStub.csproj", "{8ACB597B-4250-47B6-8C62-F6BD03574465}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9F6E5260-CFA7-40F9-BA55-0787B512B457}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F6E5260-CFA7-40F9-BA55-0787B512B457}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F6E5260-CFA7-40F9-BA55-0787B512B457}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

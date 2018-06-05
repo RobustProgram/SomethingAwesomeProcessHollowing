@@ -21,20 +21,33 @@ namespace SomethingAwesomeCrypter
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                // This is a simple function to get the path of the
-                // file we want to encrypt.
+                // This is a simple function to get the path of the file we want to encrypt.
                 string filePath = openFileDialog1.FileName;
                 textBox1.Text = filePath;
-                outputTextBox.Text = System.IO.Path.GetDirectoryName(filePath) + "\\output.file";
+                outputTextBox.Text = System.IO.Path.GetDirectoryName(filePath) + "\\output.exe";
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                // This is a simple function to get the path of the stub we want to embed the
+                // payload with.
+                textBox2.Text = openFileDialog1.FileName;
             }
         }
 
         private void BtnEncrypt_Click(object sender, EventArgs e)
         {
+            int stubPadding = 11000; //This is the byte offset that the stub will start loading
+                                     // the encrypted executable from.
             string filePath = textBox1.Text;
             // The whole program in bytes
-            byte[] fileBytes    = System.IO.File.ReadAllBytes(filePath);
-            byte[] newFileBytes = new byte[fileBytes.Length];
+            byte[] fileBytes         = System.IO.File.ReadAllBytes(filePath);
+            byte[] stubFileBytes     = System.IO.File.ReadAllBytes(textBox2.Text);
+            byte[] encryptedExeBytes = new byte[fileBytes.Length];
+            byte[] finalFileBytes    = new byte[stubPadding + fileBytes.Length];
             // The secret key in bytes
             byte[] secretKey = new byte[] { 0x10, 0x20, 0x92, 0x12, 0x29 };
 
@@ -47,12 +60,23 @@ namespace SomethingAwesomeCrypter
                 byte secretByte = secretKey[i% secretKey.Length];
                 byte newB = (byte)(b ^ secretByte);
 
-                newFileBytes[i] = newB;
+                encryptedExeBytes[i] = newB;
 
                 i++;
             }
 
-            System.IO.File.WriteAllBytes(outputTextBox.Text, newFileBytes);
+            // Prepare the stub by embedding the payload
+            for (i = 0; i < stubFileBytes.Length; i++)
+            {
+                finalFileBytes[i] = stubFileBytes[i];
+            }
+            for (i = 0; i < encryptedExeBytes.Length; i++)
+            {
+                finalFileBytes[stubPadding + i] = encryptedExeBytes[i];
+            }
+
+            System.IO.File.WriteAllBytes(outputTextBox.Text, finalFileBytes);
+            MessageBox.Show("Payload successfully made.");
         }
     }
 }

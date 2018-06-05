@@ -117,4 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="label1.Text" xml:space="preserve">
+    <value>WARNING: This program has being made with the intention of running an embedded executable that
+could potentially be malicious. The creator of this software does not take any responsibility for any
+harm that may occur from running this program due to the nature of the project involved.
+
+Please approach with caution when using this program.</value>
+  </data>
 </root>
