@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SomethingAwesomeCrypter", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SomeAwesomeStub", "SomeAwesomeStub\SomeAwesomeStub.csproj", "{8ACB597B-4250-47B6-8C62-F6BD03574465}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetVirusTest", "DotNetVirusTest\DotNetVirusTest.csproj", "{DA987F00-8F42-410F-AEA9-D7EC3204DF04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8ACB597B-4250-47B6-8C62-F6BD03574465}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA987F00-8F42-410F-AEA9-D7EC3204DF04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA987F00-8F42-410F-AEA9-D7EC3204DF04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA987F00-8F42-410F-AEA9-D7EC3204DF04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA987F00-8F42-410F-AEA9-D7EC3204DF04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -40,7 +40,7 @@ namespace SomethingAwesomeCrypter
 
         private void BtnEncrypt_Click(object sender, EventArgs e)
         {
-            int stubPadding = 11000; //This is the byte offset that the stub will start loading
+            int stubPadding = 12000; //This is the byte offset that the stub will start loading
                                      // the encrypted executable from.
             string filePath = textBox1.Text;
             // The whole program in bytes

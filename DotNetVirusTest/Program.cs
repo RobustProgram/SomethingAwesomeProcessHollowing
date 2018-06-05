@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace SomeAwesomeStub
+namespace DotNetVirusTest
 {
     static class Program
     {
@@ -15,7 +15,7 @@ namespace SomeAwesomeStub
         static void Main()
         {
             Application.EnableVisualStyles();
-            Application.Run(new StubTest());
+            Application.Run(new Form1());
         }
     }
 }

