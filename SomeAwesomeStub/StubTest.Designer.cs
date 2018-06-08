@@ -34,6 +34,7 @@
             this.InfoNumBytes = new System.Windows.Forms.Label();
             this.InfoMsg = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // BtnStubRun
@@ -87,16 +88,26 @@
             this.label1.TabIndex = 4;
             this.label1.Text = resources.GetString("label1.Text");
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(54, 94);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(714, 183);
+            this.textBox1.TabIndex = 5;
+            // 
             // StubTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.InfoMsg);
             this.Controls.Add(this.InfoNumBytes);
             this.Controls.Add(this.LblTitleInfo);
             this.Controls.Add(this.BtnStubRun);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "StubTest";
             this.Text = "Program Stub";
             this.ResumeLayout(false);
@@ -111,6 +122,7 @@
         private System.Windows.Forms.Label InfoNumBytes;
         private System.Windows.Forms.Label InfoMsg;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox1;
     }
 }
 

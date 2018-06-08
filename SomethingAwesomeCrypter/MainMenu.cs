@@ -35,12 +35,13 @@ namespace SomethingAwesomeCrypter
                 // This is a simple function to get the path of the stub we want to embed the
                 // payload with.
                 textBox2.Text = openFileDialog1.FileName;
+                Console.WriteLine(System.IO.Path.GetTempPath());
             }
         }
 
         private void BtnEncrypt_Click(object sender, EventArgs e)
         {
-            int stubPadding = 12000; //This is the byte offset that the stub will start loading
+            int stubPadding = 15000; //This is the byte offset that the stub will start loading
                                      // the encrypted executable from.
             string filePath = textBox1.Text;
             // The whole program in bytes
