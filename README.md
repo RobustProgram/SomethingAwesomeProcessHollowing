@@ -1,4 +1,4 @@
-# Something Awesome Crypter
+# Something Awesome Process Hollowing
 A security project for COMP6841 UNSW
 
 This project is about building a program that is able to use encryption to bypass antivirus protection. This is for educational purposes as it shows those who are interested how hackers are able to use encryption to their advantage in enabling their activities.
